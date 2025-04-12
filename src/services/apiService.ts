@@ -1,5 +1,5 @@
 
-import { ThreatAlert, SystemStatus, AnomalyData, TrafficData, SystemHealth } from '@/types/api';
+import { ThreatAlert, SystemStatus, AnomalyData, TrafficData, SystemHealth, LegacyAlert } from '@/types/api';
 import { 
   alertFeedData, 
   anomalyData, 
@@ -40,7 +40,16 @@ class ApiService {
   // Obtém alertas ativos
   async getActiveAlerts(): Promise<ThreatAlert[]> {
     await this.delay();
-    return alertFeedData as ThreatAlert[];
+    // Converter o formato antigo para o novo formato ThreatAlert
+    return (alertFeedData as LegacyAlert[]).map(alert => ({
+      id: String(alert.id),
+      type: alert.type,
+      severity: alert.severity as 'critical' | 'warning' | 'info',
+      timestamp: alert.timestamp,
+      source_ip: alert.source,
+      destination: alert.destination,
+      description: alert.description
+    }));
   }
 
   // Obtém dados de tráfego de rede

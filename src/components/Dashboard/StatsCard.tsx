@@ -10,6 +10,7 @@ interface StatsCardProps {
   change?: { value: number; isPositive: boolean };
   className?: string;
   valueClassName?: string;
+  isLoading?: boolean;
 }
 
 const StatsCard: React.FC<StatsCardProps> = ({
@@ -19,6 +20,7 @@ const StatsCard: React.FC<StatsCardProps> = ({
   change,
   className,
   valueClassName,
+  isLoading = false,
 }) => {
   return (
     <Card className={cn("hover-scale", className)}>
@@ -26,7 +28,9 @@ const StatsCard: React.FC<StatsCardProps> = ({
         <div className="flex justify-between items-start">
           <div>
             <p className="text-sm text-muted-foreground">{title}</p>
-            <h3 className={cn("text-2xl font-bold mt-1", valueClassName)}>{value}</h3>
+            <h3 className={cn("text-2xl font-bold mt-1", valueClassName)}>
+              {isLoading ? "Loading..." : value}
+            </h3>
             
             {change && (
               <p className={`text-xs mt-1 ${change.isPositive ? 'text-success' : 'text-critical'}`}>

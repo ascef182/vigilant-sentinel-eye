@@ -41,3 +41,14 @@ export interface SystemHealth {
   status: 'operational' | 'degraded' | 'outage';
   load: number;
 }
+
+// Legacy alert structure used in mock data (different from ThreatAlert)
+export interface LegacyAlert {
+  id: number;
+  timestamp: string;
+  type: string;
+  source: string;
+  destination: string;
+  severity: string;
+  description: string;
+}
