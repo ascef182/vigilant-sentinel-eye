@@ -10,11 +10,17 @@ import AlertFeed from '@/components/Dashboard/AlertFeed';
 import SystemHealth from '@/components/Dashboard/SystemHealth';
 import ThreatMap from '@/components/Dashboard/ThreatMap';
 import DataTable from '@/components/Dashboard/DataTable';
+import LogAnalyzer from '@/components/Dashboard/LogAnalyzer';
 
 import { systemStats } from '@/lib/mock-data';
+import { useSystemStatus } from '@/hooks/useApi';
 
 const Index = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { data: systemData, isLoading: isLoadingStats } = useSystemStatus();
+
+  // Use os dados da API, se disponíveis; caso contrário, use os dados mockados
+  const stats = systemData || systemStats;
 
   return (
     <div className="min-h-screen bg-background antialiased">
@@ -29,26 +35,30 @@ const Index = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <StatsCard 
               title="Active Threats" 
-              value={systemStats.activeThreats} 
+              value={stats.activeThreats} 
               icon={<AlertTriangle size={18} className="text-critical" />}
               valueClassName="text-critical"
+              isLoading={isLoadingStats}
             />
             <StatsCard 
               title="Systems Monitored" 
-              value={systemStats.systemsMonitored} 
+              value={stats.systemsMonitored} 
               icon={<Shield size={18} className="text-primary" />}
+              isLoading={isLoadingStats}
             />
             <StatsCard 
               title="Alerts Today" 
-              value={systemStats.alertsToday} 
+              value={stats.alertsToday} 
               icon={<Activity size={18} className="text-warning" />}
               valueClassName="text-warning"
+              isLoading={isLoadingStats}
             />
             <StatsCard 
               title="Critical Alerts" 
-              value={systemStats.criticalAlerts} 
+              value={stats.criticalAlerts} 
               icon={<BarChart3 size={18} className="text-critical" />}
               valueClassName="text-critical"
+              isLoading={isLoadingStats}
             />
           </div>
           
@@ -70,8 +80,13 @@ const Index = () => {
             </div>
           </div>
           
-          <div>
-            <DataTable />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              <DataTable />
+            </div>
+            <div>
+              <LogAnalyzer />
+            </div>
           </div>
         </div>
       </main>
