@@ -9,6 +9,12 @@ export function useSystemStatus() {
     queryKey: ['systemStatus'],
     queryFn: () => apiService.getSystemStatus(),
     refetchInterval: 30000, // Atualiza a cada 30 segundos
+    retry: 2,
+    meta: {
+      onError: (error: any) => {
+        console.error('Failed to fetch system status:', error);
+      }
+    }
   });
 }
 
@@ -17,6 +23,12 @@ export function useAnomalyData() {
     queryKey: ['anomalyData'],
     queryFn: () => apiService.getAnomalyData(),
     refetchInterval: 60000, // Atualiza a cada minuto
+    retry: 2,
+    meta: {
+      onError: (error: any) => {
+        console.error('Failed to fetch anomaly data:', error);
+      }
+    }
   });
 }
 
@@ -25,6 +37,12 @@ export function useActiveAlerts() {
     queryKey: ['activeAlerts'],
     queryFn: () => apiService.getActiveAlerts(),
     refetchInterval: 15000, // Atualiza a cada 15 segundos
+    retry: 2,
+    meta: {
+      onError: (error: any) => {
+        console.error('Failed to fetch active alerts:', error);
+      }
+    }
   });
 }
 
@@ -33,6 +51,12 @@ export function useNetworkTraffic() {
     queryKey: ['networkTraffic'],
     queryFn: () => apiService.getNetworkTraffic(),
     refetchInterval: 20000, // Atualiza a cada 20 segundos
+    retry: 2,
+    meta: {
+      onError: (error: any) => {
+        console.error('Failed to fetch network traffic:', error);
+      }
+    }
   });
 }
 
@@ -41,6 +65,12 @@ export function useSystemHealth() {
     queryKey: ['systemHealth'],
     queryFn: () => apiService.getSystemHealth(),
     refetchInterval: 45000, // Atualiza a cada 45 segundos
+    retry: 2,
+    meta: {
+      onError: (error: any) => {
+        console.error('Failed to fetch system health:', error);
+      }
+    }
   });
 }
 
@@ -56,7 +86,8 @@ export function useAnalyzeAlert() {
         variant: data.score > 0.8 ? 'destructive' : data.score > 0.5 ? 'default' : 'default',
       });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Failed to analyze alert:', error);
       toast({
         title: 'Erro na Análise',
         description: 'Não foi possível processar este alerta',
@@ -78,7 +109,8 @@ export function useAnalyzeLogFile() {
         variant: data.threatDetected ? 'destructive' : 'default',
       });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Failed to analyze log file:', error);
       toast({
         title: 'Erro no Processamento',
         description: 'Não foi possível analisar este arquivo',
