@@ -16,6 +16,21 @@ interface AnomalyChartProps {
   data?: typeof anomalyData;
 }
 
+interface CustomDotProps {
+  cx?: number;
+  cy?: number;
+  r?: number;
+  stroke?: string;
+  strokeWidth?: number;
+  fill?: string;
+  value?: number;
+  index?: number;
+  payload?: {
+    score: number;
+    time: string;
+  };
+}
+
 const AnomalyChart: React.FC<AnomalyChartProps> = ({ data = anomalyData }) => {
   const { toast } = useToast();
   
@@ -32,6 +47,31 @@ const AnomalyChart: React.FC<AnomalyChartProps> = ({ data = anomalyData }) => {
       description: `${severity} anomaly detected at this time point.`,
       variant: score >= 70 ? 'destructive' : score >= 40 ? 'default' : 'default',
     });
+  };
+  
+  // Custom dot for the AreaChart that properly handles the click event
+  const CustomizedDot = (props: CustomDotProps) => {
+    const { cx, cy, fill, stroke, payload } = props;
+    
+    if (!cx || !cy || !payload) return null;
+    
+    return (
+      <circle 
+        cx={cx} 
+        cy={cy} 
+        r={4}
+        stroke="#fff"
+        strokeWidth={2}
+        fill={fill || "#2e86de"}
+        className="glow"
+        onClick={() => {
+          if (payload.score) {
+            handleDataPointClick(payload.score);
+          }
+        }}
+        style={{ cursor: 'pointer' }}
+      />
+    );
   };
 
   return (
@@ -100,13 +140,7 @@ const AnomalyChart: React.FC<AnomalyChartProps> = ({ data = anomalyData }) => {
                 strokeWidth={2}
                 fill="url(#anomalyGradient)" 
                 dot={{ fill: "#2e86de", strokeWidth: 2, r: 4 }}
-                activeDot={{ 
-                  fill: "#2e86de", 
-                  stroke: "#fff", 
-                  r: 6, 
-                  className: "glow",
-                  onClick: (data) => handleDataPointClick(data.payload.score)
-                }}
+                activeDot={<CustomizedDot />}
               />
             </AreaChart>
           </ResponsiveContainer>
