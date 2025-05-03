@@ -10,12 +10,7 @@ import {
   XAxis, 
   YAxis
 } from 'recharts';
-import { anomalyData } from '@/lib/mock-data';
-import { useAnomalyData } from '@/hooks/useApi';
-
-interface AnomalyChartProps {
-  data?: typeof anomalyData;
-}
+import { useRealtimeAnomalyData } from '@/hooks/useRealtimeData';
 
 interface CustomDotProps {
   cx?: number;
@@ -32,12 +27,9 @@ interface CustomDotProps {
   };
 }
 
-const AnomalyChart: React.FC<AnomalyChartProps> = ({ data }) => {
+const AnomalyChart: React.FC = () => {
   const { toast } = useToast();
-  const { data: apiData, isLoading, isError } = useAnomalyData();
-  
-  // Usar dados da API se disponíveis, senão usar dados fornecidos via props ou dados mockados
-  const chartData = apiData || data || anomalyData;
+  const chartData = useRealtimeAnomalyData();
   
   const getScoreColor = (score: number) => {
     if (score >= 70) return 'hsl(var(--critical))';
@@ -85,13 +77,9 @@ const AnomalyChart: React.FC<AnomalyChartProps> = ({ data }) => {
         <CardTitle className="text-lg font-medium">Network Anomaly Detection</CardTitle>
       </CardHeader>
       <CardContent className="p-0 pt-4">
-        {isLoading ? (
+        {chartData.length === 0 ? (
           <div className="h-[300px] w-full flex items-center justify-center">
-            <div className="text-muted-foreground">Loading anomaly data...</div>
-          </div>
-        ) : isError ? (
-          <div className="h-[300px] w-full flex items-center justify-center">
-            <div className="text-critical">Error loading anomaly data</div>
+            <div className="text-muted-foreground">Aguardando dados de anomalias em tempo real...</div>
           </div>
         ) : (
           <div className="h-[300px] w-full pr-4">

@@ -12,14 +12,13 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertTriangle, ArrowUpDown, Database } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { trafficData } from "@/lib/mock-data";
+import { TrafficData } from "@/types/api";
 import { cn } from "@/lib/utils";
+import { useRealtimeTraffic } from "@/hooks/useRealtimeData";
 
-interface DataTableProps {
-  data?: typeof trafficData;
-}
+const DataTable: React.FC = () => {
+  const trafficData = useRealtimeTraffic();
 
-const DataTable: React.FC<DataTableProps> = ({ data = trafficData }) => {
   const formatTimestamp = (timestamp: string) => {
     return new Date(timestamp).toLocaleTimeString();
   };
@@ -53,6 +52,9 @@ const DataTable: React.FC<DataTableProps> = ({ data = trafficData }) => {
           <CardTitle className="text-lg font-medium flex items-center gap-2">
             <Database size={18} className="text-muted-foreground" />
             <span>Network Traffic Analysis</span>
+            {trafficData.length === 0 && (
+              <div className="ml-2 h-2 w-2 rounded-full bg-primary animate-pulse"></div>
+            )}
           </CardTitle>
           <Button variant="outline" size="sm" className="text-xs flex items-center gap-1 h-8">
             <ArrowUpDown size={14} />
@@ -75,42 +77,50 @@ const DataTable: React.FC<DataTableProps> = ({ data = trafficData }) => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {data.map((row) => (
-                <TableRow 
-                  key={row.id} 
-                  className={cn(
-                    row.anomalyScore >= 0.8 && "bg-critical/5",
-                    "cursor-pointer hover:bg-muted/50"
-                  )}
-                >
-                  <TableCell className="font-mono text-xs">
-                    {formatTimestamp(row.timestamp)}
-                  </TableCell>
-                  <TableCell className="font-mono text-xs">
-                    {row.sourceIP}
-                  </TableCell>
-                  <TableCell className="font-mono text-xs">
-                    {row.destIP}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <Badge variant="outline" className={row.protocol === 'TCP' ? 'bg-secondary' : 'bg-secondary/50'}>
-                      {row.protocol}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-center font-mono text-xs">
-                    {row.port}
-                  </TableCell>
-                  <TableCell className="text-right font-mono text-xs">
-                    {row.bytes.toLocaleString()}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    {row.anomalyScore >= 0.8 && (
-                      <AlertTriangle size={14} className="inline mr-1 text-critical" />
-                    )}
-                    {getAnomalyScoreBadge(row.anomalyScore)}
+              {trafficData.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center py-4">
+                    Aguardando dados de tráfego em tempo real...
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                trafficData.map((row) => (
+                  <TableRow 
+                    key={row.id} 
+                    className={cn(
+                      row.anomalyScore >= 0.8 && "bg-critical/5",
+                      "cursor-pointer hover:bg-muted/50"
+                    )}
+                  >
+                    <TableCell className="font-mono text-xs">
+                      {formatTimestamp(row.timestamp)}
+                    </TableCell>
+                    <TableCell className="font-mono text-xs">
+                      {row.sourceIP}
+                    </TableCell>
+                    <TableCell className="font-mono text-xs">
+                      {row.destIP}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Badge variant="outline" className={row.protocol === 'TCP' ? 'bg-secondary' : 'bg-secondary/50'}>
+                        {row.protocol}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-center font-mono text-xs">
+                      {row.port}
+                    </TableCell>
+                    <TableCell className="text-right font-mono text-xs">
+                      {row.bytes.toLocaleString()}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {row.anomalyScore >= 0.8 && (
+                        <AlertTriangle size={14} className="inline mr-1 text-critical" />
+                      )}
+                      {getAnomalyScoreBadge(row.anomalyScore)}
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </div>

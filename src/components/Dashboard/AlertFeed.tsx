@@ -1,258 +1,147 @@
 
-import React, { useState } from 'react';
+import React from 'react';
+import { AlertCircle, AlertTriangle, Info, Shield } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { ExternalLink, Info, ShieldAlert } from 'lucide-react';
-import { alertFeedData } from '@/lib/mock-data';
-import { cn } from '@/lib/utils';
+import { Separator } from '@/components/ui/separator';
+import { Button } from '@/components/ui/button';
+import { ThreatAlert } from '@/types/api';
+import { format } from 'date-fns';
+import { useRealtimeAlerts } from '@/hooks/useRealtimeData';
+import { useAnalyzeAlert } from '@/hooks/useApi';
 
-interface Alert {
-  id: number;
-  timestamp: string;
-  type: string;
-  source: string;
-  destination: string;
-  severity: string;
-  description: string;
-}
+const AlertFeed: React.FC = () => {
+  const alerts = useRealtimeAlerts();
+  const analyzeMutation = useAnalyzeAlert();
 
-interface AlertFeedProps {
-  data?: Alert[];
-}
-
-const AlertFeed: React.FC<AlertFeedProps> = ({ data = alertFeedData }) => {
-  const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null);
-
-  const formatTimestamp = (timestamp: string) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
-    
-    if (diffMinutes < 60) {
-      return `${diffMinutes} min ago`;
-    } else if (diffMinutes < 1440) { // less than a day
-      const hours = Math.floor(diffMinutes / 60);
-      return `${hours} hr ago`;
-    } else {
-      return date.toLocaleDateString();
-    }
-  };
-
-  const getSeverityColor = (severity: string) => {
-    switch (severity.toLowerCase()) {
+  const getSeverityIcon = (severity: string, size = 16) => {
+    switch (severity) {
       case 'critical':
-        return 'bg-critical text-white border-critical critical-glow';
+        return <AlertCircle size={size} className="text-critical" />;
       case 'warning':
-        return 'bg-warning text-white border-warning warning-glow';
+        return <AlertTriangle size={size} className="text-warning" />;
+      case 'info':
       default:
-        return 'bg-info text-white border-info info-glow';
+        return <Info size={size} className="text-info" />;
     }
   };
 
-  const openAlertDetails = (alert: Alert) => {
-    setSelectedAlert(alert);
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return format(date, 'HH:mm:ss');
+    } catch (error) {
+      return dateString;
+    }
+  };
+
+  const formatTimeAgo = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffMs = now.getTime() - date.getTime();
+      
+      const diffSecs = Math.floor(diffMs / 1000);
+      if (diffSecs < 60) return `${diffSecs}s ago`;
+      
+      const diffMins = Math.floor(diffSecs / 60);
+      if (diffMins < 60) return `${diffMins}m ago`;
+      
+      const diffHours = Math.floor(diffMins / 60);
+      if (diffHours < 24) return `${diffHours}h ago`;
+      
+      const diffDays = Math.floor(diffHours / 24);
+      return `${diffDays}d ago`;
+    } catch (error) {
+      return 'unknown';
+    }
+  };
+
+  const handleAnalyzeAlert = (alert: ThreatAlert) => {
+    analyzeMutation.mutate(alert);
+  };
+
+  const getSeverityBadge = (severity: string) => {
+    switch (severity) {
+      case 'critical':
+        return <Badge variant="outline" className="bg-critical/20 text-critical border-critical">Critical</Badge>;
+      case 'warning':
+        return <Badge variant="outline" className="bg-warning/20 text-warning border-warning">Warning</Badge>;
+      case 'info':
+      default:
+        return <Badge variant="outline" className="bg-info/20 text-info border-info">Info</Badge>;
+    }
   };
 
   return (
-    <>
-      <Card>
-        <CardHeader className="px-6 pt-6 pb-4">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg font-medium">
-              <div className="flex items-center gap-2">
-                <ShieldAlert size={18} className="text-destructive" />
-                <span>Threat Alerts</span>
+    <Card className="h-full">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg font-medium flex items-center gap-2">
+          <Shield size={18} className="text-muted-foreground" />
+          <span>Threat Alerts</span>
+          {analyzeMutation.isPending && (
+            <span className="ml-2 h-2 w-2 rounded-full bg-primary animate-pulse"></span>
+          )}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-0">
+        <ScrollArea className="h-[320px]">
+          <div className="px-4">
+            {alerts.length === 0 ? (
+              <div className="py-4 text-center text-sm text-muted-foreground">
+                No active threats detected
               </div>
-            </CardTitle>
-            <div className="flex gap-2">
-              <Badge variant="outline" className="bg-secondary/40">
-                {data.filter(a => a.severity === 'critical').length} Critical
-              </Badge>
-            </div>
+            ) : (
+              alerts.map((alert, index) => (
+                <React.Fragment key={alert.id}>
+                  <div className="py-3">
+                    <div className="flex items-start justify-between mb-1">
+                      <div className="flex items-center gap-2">
+                        {getSeverityIcon(alert.severity)}
+                        <span className="font-medium">{alert.type}</span>
+                        {getSeverityBadge(alert.severity)}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {formatTimeAgo(alert.timestamp)}
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-1">
+                      <div className="text-xs">{alert.description}</div>
+                      <div className="flex flex-wrap gap-2">
+                        <div className="text-xs bg-muted px-2 py-0.5 rounded">
+                          From: <span className="font-mono">{alert.source_ip}</span>
+                        </div>
+                        {alert.destination && (
+                          <div className="text-xs bg-muted px-2 py-0.5 rounded">
+                            To: <span className="font-mono">{alert.destination}</span>
+                          </div>
+                        )}
+                        <div className="text-xs bg-muted px-2 py-0.5 rounded">
+                          Time: <span className="font-mono">{formatDate(alert.timestamp)}</span>
+                        </div>
+                      </div>
+                      
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        className="h-7 text-xs mt-1 w-full"
+                        onClick={() => handleAnalyzeAlert(alert)}
+                        disabled={analyzeMutation.isPending}
+                      >
+                        Analyze Threat
+                      </Button>
+                    </div>
+                  </div>
+                  {index < alerts.length - 1 && <Separator />}
+                </React.Fragment>
+              ))
+            )}
           </div>
-        </CardHeader>
-        <CardContent className="px-0 pb-0">
-          <Tabs defaultValue="all" className="w-full">
-            <div className="px-6">
-              <TabsList className="w-full bg-background/50 grid grid-cols-3 mb-4">
-                <TabsTrigger value="all">All</TabsTrigger>
-                <TabsTrigger value="critical">Critical</TabsTrigger>
-                <TabsTrigger value="warning">Warning</TabsTrigger>
-              </TabsList>
-            </div>
-
-            <TabsContent value="all" className="m-0">
-              <ul className="max-h-[300px] overflow-y-auto">
-                {data.map((alert) => (
-                  <li
-                    key={alert.id}
-                    className={cn(
-                      "px-6 py-3 flex items-start justify-between border-t border-border cursor-pointer hover:bg-secondary/20",
-                      alert.severity === 'critical' && "bg-destructive/5"
-                    )}
-                    onClick={() => openAlertDetails(alert)}
-                  >
-                    <div className="flex gap-3">
-                      <Badge className={cn("rounded-sm", getSeverityColor(alert.severity))}>
-                        {alert.severity.charAt(0).toUpperCase()}
-                      </Badge>
-                      <div>
-                        <p className="font-medium text-sm">{alert.type}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {alert.source} → {alert.destination}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {formatTimestamp(alert.timestamp)}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-              <div className="border-t border-border p-4 flex justify-center">
-                <Button variant="outline" size="sm" className="text-xs">
-                  View All Alerts
-                </Button>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="critical" className="m-0">
-              <ul className="max-h-[300px] overflow-y-auto">
-                {data
-                  .filter(alert => alert.severity === 'critical')
-                  .map((alert) => (
-                    <li
-                      key={alert.id}
-                      className="px-6 py-3 flex items-start justify-between border-t border-border cursor-pointer hover:bg-secondary/20 bg-destructive/5"
-                      onClick={() => openAlertDetails(alert)}
-                    >
-                      <div className="flex gap-3">
-                        <Badge className={cn("rounded-sm", getSeverityColor(alert.severity))}>
-                          {alert.severity.charAt(0).toUpperCase()}
-                        </Badge>
-                        <div>
-                          <p className="font-medium text-sm">{alert.type}</p>
-                          <p className="text-xs text-muted-foreground mt-0.5">
-                            {alert.source} → {alert.destination}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {formatTimestamp(alert.timestamp)}
-                      </div>
-                    </li>
-                  ))}
-              </ul>
-              <div className="border-t border-border p-4 flex justify-center">
-                <Button variant="outline" size="sm" className="text-xs">
-                  View All Alerts
-                </Button>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="warning" className="m-0">
-              <ul className="max-h-[300px] overflow-y-auto">
-                {data
-                  .filter(alert => alert.severity === 'warning')
-                  .map((alert) => (
-                    <li
-                      key={alert.id}
-                      className="px-6 py-3 flex items-start justify-between border-t border-border cursor-pointer hover:bg-secondary/20"
-                      onClick={() => openAlertDetails(alert)}
-                    >
-                      <div className="flex gap-3">
-                        <Badge className={cn("rounded-sm", getSeverityColor(alert.severity))}>
-                          {alert.severity.charAt(0).toUpperCase()}
-                        </Badge>
-                        <div>
-                          <p className="font-medium text-sm">{alert.type}</p>
-                          <p className="text-xs text-muted-foreground mt-0.5">
-                            {alert.source} → {alert.destination}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {formatTimestamp(alert.timestamp)}
-                      </div>
-                    </li>
-                  ))}
-              </ul>
-              <div className="border-t border-border p-4 flex justify-center">
-                <Button variant="outline" size="sm" className="text-xs">
-                  View All Alerts
-                </Button>
-              </div>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
-
-      <Dialog open={selectedAlert !== null} onOpenChange={(open) => !open && setSelectedAlert(null)}>
-        {selectedAlert && (
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <div className={cn(
-                  "h-3 w-3 rounded-full",
-                  selectedAlert.severity === 'critical' ? "bg-critical" : "bg-warning"
-                )} />
-                {selectedAlert.type}
-              </DialogTitle>
-              <DialogDescription>
-                Alert ID: {selectedAlert.id}
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <div className="text-muted-foreground text-sm">Severity:</div>
-                <div className="col-span-3">
-                  <Badge className={cn("rounded-sm", getSeverityColor(selectedAlert.severity))}>
-                    {selectedAlert.severity}
-                  </Badge>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-4 items-center gap-4">
-                <div className="text-muted-foreground text-sm">Source:</div>
-                <div className="col-span-3 text-sm">{selectedAlert.source}</div>
-              </div>
-              
-              <div className="grid grid-cols-4 items-center gap-4">
-                <div className="text-muted-foreground text-sm">Destination:</div>
-                <div className="col-span-3 text-sm">{selectedAlert.destination}</div>
-              </div>
-              
-              <div className="grid grid-cols-4 items-center gap-4">
-                <div className="text-muted-foreground text-sm">Timestamp:</div>
-                <div className="col-span-3 text-sm">
-                  {new Date(selectedAlert.timestamp).toLocaleString()}
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-4 items-start gap-4">
-                <div className="text-muted-foreground text-sm">Description:</div>
-                <div className="col-span-3 text-sm">{selectedAlert.description}</div>
-              </div>
-            </div>
-            
-            <div className="flex justify-between">
-              <Button variant="outline" size="sm" className="gap-1">
-                <Info size={14} />
-                Full Details
-              </Button>
-              <Button size="sm" variant="default" className="gap-1">
-                <ExternalLink size={14} />
-                Investigate
-              </Button>
-            </div>
-          </DialogContent>
-        )}
-      </Dialog>
-    </>
+        </ScrollArea>
+      </CardContent>
+    </Card>
   );
 };
 

@@ -1,4 +1,3 @@
-
 import axios from 'axios';
 import { ThreatAlert, SystemStatus, AnomalyData, TrafficData, SystemHealth, LegacyAlert } from '@/types/api';
 import { createClient } from '@supabase/supabase-js';
@@ -12,7 +11,7 @@ import {
 
 // Flag to control if we use mock data or real API
 // Set to true to connect to Supabase API, false to use mock data
-const USE_REAL_API = false;
+const USE_REAL_API = true;
 
 // Create a single supabase client for the entire app
 const supabaseUrl = process.env.VITE_SUPABASE_URL || '';
@@ -27,9 +26,59 @@ const API = axios.create({
 // This class simulates an API service that can be later 
 // replaced with real backend calls
 class ApiService {
+  // Stores realtime subscription callbacks
+  private realtimeSubscriptions: { [key: string]: () => void } = {};
+
   // Simulates network delay
   private async delay(ms: number = 500): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  // Subscribes to realtime changes for a given table
+  subscribeToTable(table: string, callback: (payload: any) => void): () => void {
+    if (!USE_REAL_API) {
+      console.warn('Realtime subscriptions are only available when using real API');
+      return () => {};
+    }
+
+    const channel = supabase
+      .channel(`public:${table}`)
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table 
+        }, 
+        (payload) => {
+          console.log('Change received!', payload);
+          callback(payload);
+        })
+      .subscribe((status) => {
+        console.log(`Subscription status for ${table}:`, status);
+      });
+      
+    // Store unsubscribe function
+    this.realtimeSubscriptions[table] = () => {
+      supabase.removeChannel(channel);
+    };
+    
+    return this.realtimeSubscriptions[table];
+  }
+
+  // Unsubscribes from a specific table
+  unsubscribe(table: string): void {
+    if (this.realtimeSubscriptions[table]) {
+      this.realtimeSubscriptions[table]();
+      delete this.realtimeSubscriptions[table];
+    }
+  }
+
+  // Unsubscribes from all tables
+  unsubscribeAll(): void {
+    Object.keys(this.realtimeSubscriptions).forEach(table => {
+      this.realtimeSubscriptions[table]();
+    });
+    this.realtimeSubscriptions = {};
   }
 
   // Gets system status data
@@ -375,4 +424,4 @@ class ApiService {
 
 // Export a single instance of the service to be used throughout the application
 export const apiService = new ApiService();
-export { API };  // Export Axios instance for direct use if needed
+export { API, supabase };  // Export Axios instance and Supabase client for direct use if needed
