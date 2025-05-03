@@ -12,6 +12,7 @@ import ThreatMap from '@/components/Dashboard/ThreatMap';
 import DataTable from '@/components/Dashboard/DataTable';
 import LogAnalyzer from '@/components/Dashboard/LogAnalyzer';
 import VirusTotalAnalyzer from '@/components/Dashboard/VirusTotalAnalyzer';
+import OtxThreatAnalyzer from '@/components/Dashboard/OtxThreatAnalyzer';
 
 import { systemStats } from '@/lib/mock-data';
 import { useSystemStatus } from '@/hooks/useApi';
@@ -81,17 +82,18 @@ const Index = () => {
             </div>
           </div>
           
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <OtxThreatAnalyzer />
+            <VirusTotalAnalyzer />
+          </div>
+          
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
-              <VirusTotalAnalyzer />
+              <DataTable />
             </div>
             <div>
               <LogAnalyzer />
             </div>
-          </div>
-          
-          <div className="grid grid-cols-1">
-            <DataTable />
           </div>
         </div>
       </main>

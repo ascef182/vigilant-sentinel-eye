@@ -1,3 +1,4 @@
+
 import axios from 'axios';
 import { ThreatAlert, SystemStatus, AnomalyData, TrafficData, SystemHealth, LegacyAlert } from '@/types/api';
 import { supabase } from './supabaseClient';
@@ -36,26 +37,36 @@ class ApiService {
       return () => {};
     }
 
-    const channel = supabase
-      .channel(`public:${table}`)
-      .on('postgres_changes', 
-        { 
-          event: '*', 
-          schema: 'public', 
-          table 
-        }, 
-        (payload) => {
-          console.log('Change received!', payload);
-          callback(payload);
-        })
-      .subscribe((status) => {
-        console.log(`Subscription status for ${table}:`, status);
-      });
+    try {
+      const channel = supabase.channel(`public:${table}`);
       
-    // Store unsubscribe function
-    this.realtimeSubscriptions[table] = () => {
-      supabase.removeChannel(channel);
-    };
+      if (channel && channel.on) {
+        channel.on('postgres_changes', 
+          { 
+            event: '*', 
+            schema: 'public', 
+            table 
+          }, 
+          (payload) => {
+            console.log('Change received!', payload);
+            callback(payload);
+          })
+          .subscribe((status) => {
+            console.log(`Subscription status for ${table}:`, status);
+          });
+          
+        // Store unsubscribe function
+        this.realtimeSubscriptions[table] = () => {
+          supabase.removeChannel(channel);
+        };
+      } else {
+        console.warn("Channel or on method not available");
+        this.realtimeSubscriptions[table] = () => {};
+      }
+    } catch (error) {
+      console.error("Error setting up channel:", error);
+      this.realtimeSubscriptions[table] = () => {};
+    }
     
     return this.realtimeSubscriptions[table];
   }
@@ -80,28 +91,42 @@ class ApiService {
   async getSystemStatus(): Promise<SystemStatus> {
     if (USE_REAL_API) {
       try {
-        const { data, error } = await supabase
+        const queryResult = await supabase
           .from('system_status')
-          .select('*')
-          .single();
+          .select('*');
           
-        if (error) throw error;
+        if (queryResult.error) throw queryResult.error;
+        
+        // If we have data and single method, use it
+        const data = queryResult.data && queryResult.data.length > 0 
+          ? queryResult.data[0] 
+          : null;
+        
+        if (!data) throw new Error('No system status data found');
         
         // Calculate counts based on threat_alerts table
-        const { data: alertData, error: alertError } = await supabase
+        const alertQueryResult = await supabase
           .from('threat_alerts')
-          .select('severity, created_at')
-          .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
+          .select('severity, created_at');
+          
+        if (alertQueryResult.error) throw alertQueryResult.error;
         
-        if (alertError) throw alertError;
+        const alertData = alertQueryResult.data || [];
         
-        const criticalAlerts = alertData.filter(alert => alert.severity === 'critical').length;
+        // Filter alerts from the last 24 hours
+        const recentAlerts = alertData.filter(alert => {
+          const createdAt = new Date(alert.created_at);
+          const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
+          return createdAt >= yesterday;
+        });
+        
+        const criticalAlerts = recentAlerts.filter(alert => alert.severity === 'critical').length;
         const systemsMonitored = 6; // Fixed number of systems we're monitoring
         
         return {
-          activeThreats: alertData.length,
+          activeThreats: recentAlerts.length,
           systemsMonitored,
-          alertsToday: alertData.length,
+          alertsToday: recentAlerts.length,
           criticalAlerts
         };
       } catch (error) {
@@ -123,15 +148,23 @@ class ApiService {
   async getAnomalyData(): Promise<AnomalyData[]> {
     if (USE_REAL_API) {
       try {
-        const { data, error } = await supabase
+        const queryResult = await supabase
           .from('anomaly_logs')
-          .select('*')
-          .order('timestamp', { ascending: true })
-          .limit(50);
+          .select('*');
           
-        if (error) throw error;
+        if (queryResult.error) throw queryResult.error;
         
-        return data.map(item => ({
+        const data = queryResult.data || [];
+        
+        // Sort by timestamp manually if order isn't available
+        const sortedData = [...data].sort((a, b) => 
+          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+        );
+        
+        // Limit to 50 items
+        const limitedData = sortedData.slice(0, 50);
+        
+        return limitedData.map(item => ({
           time: new Date(item.timestamp).toLocaleTimeString(),
           score: item.value * 100 // Convert 0-1 to 0-100 for visualization
         }));
@@ -153,15 +186,23 @@ class ApiService {
   async getActiveAlerts(): Promise<ThreatAlert[]> {
     if (USE_REAL_API) {
       try {
-        const { data, error } = await supabase
+        const queryResult = await supabase
           .from('threat_alerts')
-          .select('*')
-          .order('timestamp', { ascending: false })
-          .limit(20);
+          .select('*');
           
-        if (error) throw error;
+        if (queryResult.error) throw queryResult.error;
         
-        return data.map(alert => ({
+        const data = queryResult.data || [];
+        
+        // Sort by timestamp manually if order isn't available
+        const sortedData = [...data].sort((a, b) => 
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        );
+        
+        // Limit to 20 items
+        const limitedData = sortedData.slice(0, 20);
+        
+        return limitedData.map(alert => ({
           id: String(alert.id),
           type: alert.type,
           severity: alert.severity as 'critical' | 'warning' | 'info',
@@ -193,15 +234,23 @@ class ApiService {
   async getNetworkTraffic(): Promise<TrafficData[]> {
     if (USE_REAL_API) {
       try {
-        const { data, error } = await supabase
+        const queryResult = await supabase
           .from('network_traffic')
-          .select('*')
-          .order('timestamp', { ascending: false })
-          .limit(15);
+          .select('*');
           
-        if (error) throw error;
+        if (queryResult.error) throw queryResult.error;
         
-        return data.map(item => ({
+        const data = queryResult.data || [];
+        
+        // Sort by timestamp manually if order isn't available
+        const sortedData = [...data].sort((a, b) => 
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        );
+        
+        // Limit to 15 items
+        const limitedData = sortedData.slice(0, 15);
+        
+        return limitedData.map(item => ({
           id: item.id,
           timestamp: new Date(item.timestamp).toISOString(),
           sourceIP: item.source_ip,
@@ -225,12 +274,18 @@ class ApiService {
   async getSystemHealth(): Promise<SystemHealth[]> {
     if (USE_REAL_API) {
       try {
-        const { data, error } = await supabase
+        const queryResult = await supabase
           .from('system_status')
-          .select('*')
-          .single();
+          .select('*');
           
-        if (error) throw error;
+        if (queryResult.error) throw queryResult.error;
+        
+        // Get the first item if available
+        const data = queryResult.data && queryResult.data.length > 0 
+          ? queryResult.data[0] 
+          : null;
+        
+        if (!data) throw new Error('No system status data found');
         
         // Transform the flat structure into the component's expected format
         return [
@@ -290,7 +345,7 @@ class ApiService {
         // For now, we'll generate a synthetic result
         
         // Save the alert to Supabase
-        const { data, error } = await supabase
+        const insertResult = await supabase
           .from('threat_alerts')
           .insert({
             type: alertData.type,
@@ -298,10 +353,9 @@ class ApiService {
             source_ip: alertData.source_ip,
             destination_ip: alertData.destination,
             timestamp: new Date().toISOString()
-          })
-          .select();
+          });
           
-        if (error) throw error;
+        if (insertResult.error) throw insertResult.error;
         
         // Generate a synthetic score based on severity
         let score = 0.5;
@@ -369,7 +423,7 @@ class ApiService {
         const threatDetected = anomalyScore > 0.7;
         
         // Store results in Supabase
-        const { error } = await supabase
+        const insertResult = await supabase
           .from('processed_logs')
           .insert({
             file_name: file.name,
@@ -377,7 +431,7 @@ class ApiService {
             uploaded_at: new Date().toISOString()
           });
           
-        if (error) throw error;
+        if (insertResult.error) throw insertResult.error;
         
         return {
           threatDetected,

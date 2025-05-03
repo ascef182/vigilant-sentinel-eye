@@ -16,19 +16,67 @@ export const supabase = supabaseUrl && supabaseKey
   : {
       // Mock implementation with empty methods that don't fail
       from: () => ({
-        select: () => ({ data: [], error: null }),
-        insert: () => ({ data: null, error: null }),
-        update: () => ({ data: null, error: null }),
-        delete: () => ({ data: null, error: null }),
-        single: () => ({ data: null, error: null }),
-        eq: () => ({ data: null, error: null }),
-        gte: () => ({ data: null, error: null }),
-        order: () => ({ data: [], error: null, limit: () => ({ data: [], error: null }) }),
-        limit: () => ({ data: [], error: null }),
+        select: () => {
+          const mockQuery = {
+            data: [],
+            error: null,
+            eq: () => ({ 
+              data: null, 
+              error: null,
+              single: () => ({ data: null, error: null })
+            }),
+            gte: () => ({ 
+              data: [], 
+              error: null 
+            }),
+            single: () => ({ 
+              data: null, 
+              error: null 
+            }),
+            order: () => ({ 
+              data: [], 
+              error: null, 
+              limit: () => ({ data: [], error: null }) 
+            }),
+            limit: () => ({ 
+              data: [], 
+              error: null 
+            }),
+          };
+          return mockQuery;
+        },
+        insert: () => ({
+          data: null,
+          error: null,
+          select: () => ({ data: null, error: null })
+        }),
+        upsert: () => ({
+          data: null,
+          error: null
+        }),
+        update: () => ({
+          data: null,
+          error: null
+        }),
+        delete: () => ({
+          data: null,
+          error: null
+        }),
       }),
-      channel: () => ({
-        on: () => ({ subscribe: () => {} }),
-        subscribe: () => ({}),
+      channel: (name: string) => ({
+        on: (event: string, filter: any, callback: (payload: any) => void) => {
+          console.log(`Mock channel ${name} subscribed to ${event}`);
+          return {
+            subscribe: (cb: (status: string) => void) => {
+              cb('SUBSCRIBED');
+              return {};
+            }
+          };
+        },
+        subscribe: (cb: (status: string) => void) => {
+          cb('SUBSCRIBED');
+          return {};
+        }
       }),
       removeChannel: () => {},
       auth: {
