@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from 'react';
-import { apiService, supabase } from '@/services/apiService';
+import { apiService } from '@/services/apiService';
 import { ThreatAlert, TrafficData, AnomalyData } from '@/types/api';
 import { useToast } from './use-toast';
 
