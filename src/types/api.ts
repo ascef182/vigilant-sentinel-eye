@@ -1,4 +1,3 @@
-
 // API Data Types
 
 export interface ThreatAlert {
@@ -58,4 +57,11 @@ export interface LogAnalysisResult {
   threatDetected: boolean;
   anomalyScore: number;
   suspiciousEntries?: string[];
+}
+
+// VirusTotal cache table
+export interface VirusTotalCache {
+  key: string;
+  result: any;
+  timestamp: string;
 }

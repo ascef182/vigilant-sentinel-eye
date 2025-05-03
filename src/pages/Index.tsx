@@ -11,6 +11,7 @@ import SystemHealth from '@/components/Dashboard/SystemHealth';
 import ThreatMap from '@/components/Dashboard/ThreatMap';
 import DataTable from '@/components/Dashboard/DataTable';
 import LogAnalyzer from '@/components/Dashboard/LogAnalyzer';
+import VirusTotalAnalyzer from '@/components/Dashboard/VirusTotalAnalyzer';
 
 import { systemStats } from '@/lib/mock-data';
 import { useSystemStatus } from '@/hooks/useApi';
@@ -82,11 +83,15 @@ const Index = () => {
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
-              <DataTable />
+              <VirusTotalAnalyzer />
             </div>
             <div>
               <LogAnalyzer />
             </div>
+          </div>
+          
+          <div className="grid grid-cols-1">
+            <DataTable />
           </div>
         </div>
       </main>
