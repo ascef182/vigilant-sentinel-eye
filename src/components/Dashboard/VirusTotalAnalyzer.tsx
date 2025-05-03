@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Shield, Database, FileText, Search, Link, Code, Hash } from 'lucide-react';
+import { Shield, Database, FileText, Search, Link, Hash } from 'lucide-react';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';

@@ -1,10 +1,11 @@
 
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { virusTotalService, VirusTotalResult } from '@/services/virusTotalService';
+import { virusTotalService, calculateThreatScore } from '@/services/virusTotalService';
 import { useToast } from './use-toast';
 import { ThreatAlert } from '@/types/api';
 import { apiService } from '@/services/apiService';
+import { VirusTotalResult } from '@/types/virusTotal';
 
 export function useVirusTotal() {
   const { toast } = useToast();
@@ -24,7 +25,7 @@ export function useVirusTotal() {
   const analyzeIp = useMutation({
     mutationFn: async (ip: string) => {
       const result = await virusTotalService.getIpReport(ip);
-      const threatScore = virusTotalService.calculateThreatScore(result);
+      const threatScore = calculateThreatScore(result);
       
       // If threat score is significant, create an alert
       if (threatScore > 0.3) {
@@ -44,7 +45,7 @@ export function useVirusTotal() {
   const analyzeDomain = useMutation({
     mutationFn: async (domain: string) => {
       const result = await virusTotalService.getDomainReport(domain);
-      const threatScore = virusTotalService.calculateThreatScore(result);
+      const threatScore = calculateThreatScore(result);
       
       // If threat score is significant, create an alert
       if (threatScore > 0.3) {
@@ -68,7 +69,7 @@ export function useVirusTotal() {
       
       // Then get the report using the returned ID
       const result = await virusTotalService.getUrlReport(scanId);
-      const threatScore = virusTotalService.calculateThreatScore(result);
+      const threatScore = calculateThreatScore(result);
       
       // If threat score is significant, create an alert
       if (threatScore > 0.3) {
@@ -88,7 +89,7 @@ export function useVirusTotal() {
   const analyzeFileHash = useMutation({
     mutationFn: async (hash: string) => {
       const result = await virusTotalService.getFileReport(hash);
-      const threatScore = virusTotalService.calculateThreatScore(result);
+      const threatScore = calculateThreatScore(result);
       
       // If threat score is significant, create an alert
       if (threatScore > 0.3) {
@@ -111,7 +112,7 @@ export function useVirusTotal() {
       
       // Then get the analysis report
       const result = await virusTotalService.getAnalysisReport(analysisId);
-      const threatScore = virusTotalService.calculateThreatScore(result);
+      const threatScore = calculateThreatScore(result);
       
       // If threat score is significant, create an alert
       if (threatScore > 0.3) {
