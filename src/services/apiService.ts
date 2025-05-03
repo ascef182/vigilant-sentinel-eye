@@ -1,3 +1,4 @@
+
 import axios from 'axios';
 import { ThreatAlert, SystemStatus, AnomalyData, TrafficData, SystemHealth, LegacyAlert } from '@/types/api';
 import { createClient } from '@supabase/supabase-js';
@@ -14,8 +15,8 @@ import {
 const USE_REAL_API = true;
 
 // Create a single supabase client for the entire app
-const supabaseUrl = process.env.VITE_SUPABASE_URL || '';
-const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || '';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Axios instance configured (for future HTTP requests if needed)
