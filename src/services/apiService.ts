@@ -1,6 +1,7 @@
 
 import axios from 'axios';
 import { ThreatAlert, SystemStatus, AnomalyData, TrafficData, SystemHealth, LegacyAlert } from '@/types/api';
+import { createClient } from '@supabase/supabase-js';
 import { 
   alertFeedData, 
   anomalyData, 
@@ -9,36 +10,63 @@ import {
   systemHealthData 
 } from '@/lib/mock-data';
 
-// Criar uma instância do Axios configurada
+// Flag to control if we use mock data or real API
+// Set to true to connect to Supabase API, false to use mock data
+const USE_REAL_API = false;
+
+// Create a single supabase client for the entire app
+const supabaseUrl = process.env.VITE_SUPABASE_URL || '';
+const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || '';
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+// Axios instance configured (for future HTTP requests if needed)
 const API = axios.create({
   baseURL: 'http://localhost:8000/api',
 });
 
-// Flag para controlar se usamos dados mockados ou a API real
-// Defina como false para usar dados mockados, true para conectar à API real
-const USE_REAL_API = false;
-
-// Esta classe simula um serviço de API que no futuro pode ser
-// substituído por chamadas reais para um backend FastAPI
+// This class simulates an API service that can be later 
+// replaced with real backend calls
 class ApiService {
-  // Simula um atraso de rede
+  // Simulates network delay
   private async delay(ms: number = 500): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  // Obtém dados do status do sistema
+  // Gets system status data
   async getSystemStatus(): Promise<SystemStatus> {
     if (USE_REAL_API) {
       try {
-        const response = await API.get('/system/status');
-        return response.data;
+        const { data, error } = await supabase
+          .from('system_status')
+          .select('*')
+          .single();
+          
+        if (error) throw error;
+        
+        // Calculate counts based on threat_alerts table
+        const { data: alertData, error: alertError } = await supabase
+          .from('threat_alerts')
+          .select('severity, created_at')
+          .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
+        
+        if (alertError) throw alertError;
+        
+        const criticalAlerts = alertData.filter(alert => alert.severity === 'critical').length;
+        const systemsMonitored = 6; // Fixed number of systems we're monitoring
+        
+        return {
+          activeThreats: alertData.length,
+          systemsMonitored,
+          alertsToday: alertData.length,
+          criticalAlerts
+        };
       } catch (error) {
         console.error("Error fetching system status:", error);
         throw error;
       }
     } else {
       await this.delay();
-      // Simulando modificações aleatórias para demonstrar dados dinâmicos
+      // Simulating random changes to demonstrate dynamic data
       return {
         ...systemStats,
         activeThreats: systemStats.activeThreats + Math.floor(Math.random() * 3),
@@ -47,19 +75,29 @@ class ApiService {
     }
   }
 
-  // Obtém os dados de anomalias para o gráfico
+  // Gets anomaly data for the chart
   async getAnomalyData(): Promise<AnomalyData[]> {
     if (USE_REAL_API) {
       try {
-        const response = await API.get('/anomaly/data');
-        return response.data;
+        const { data, error } = await supabase
+          .from('anomaly_logs')
+          .select('*')
+          .order('timestamp', { ascending: true })
+          .limit(50);
+          
+        if (error) throw error;
+        
+        return data.map(item => ({
+          time: new Date(item.timestamp).toLocaleTimeString(),
+          score: item.value * 100 // Convert 0-1 to 0-100 for visualization
+        }));
       } catch (error) {
         console.error("Error fetching anomaly data:", error);
         throw error;
       }
     } else {
       await this.delay();
-      // Adiciona alguma variação aleatória para simular dados em tempo real
+      // Add random variation to simulate real-time data
       return anomalyData.map(item => ({
         ...item,
         score: Math.min(100, Math.max(0, item.score + (Math.random() * 10 - 5)))
@@ -67,19 +105,34 @@ class ApiService {
     }
   }
 
-  // Obtém alertas ativos
+  // Gets active alerts
   async getActiveAlerts(): Promise<ThreatAlert[]> {
     if (USE_REAL_API) {
       try {
-        const response = await API.get('/threats/active');
-        return response.data;
+        const { data, error } = await supabase
+          .from('threat_alerts')
+          .select('*')
+          .order('timestamp', { ascending: false })
+          .limit(20);
+          
+        if (error) throw error;
+        
+        return data.map(alert => ({
+          id: String(alert.id),
+          type: alert.type,
+          severity: alert.severity as 'critical' | 'warning' | 'info',
+          timestamp: new Date(alert.timestamp).toISOString(),
+          source_ip: alert.source_ip,
+          destination: alert.destination_ip,
+          description: `${alert.type} detected from ${alert.source_ip}`
+        }));
       } catch (error) {
         console.error("Error fetching active alerts:", error);
         throw error;
       }
     } else {
       await this.delay();
-      // Converter o formato antigo para o novo formato ThreatAlert
+      // Convert legacy format to ThreatAlert format
       return (alertFeedData as LegacyAlert[]).map(alert => ({
         id: String(alert.id),
         type: alert.type,
@@ -92,12 +145,28 @@ class ApiService {
     }
   }
 
-  // Obtém dados de tráfego de rede
+  // Gets network traffic data
   async getNetworkTraffic(): Promise<TrafficData[]> {
     if (USE_REAL_API) {
       try {
-        const response = await API.get('/network/traffic');
-        return response.data;
+        const { data, error } = await supabase
+          .from('network_traffic')
+          .select('*')
+          .order('timestamp', { ascending: false })
+          .limit(15);
+          
+        if (error) throw error;
+        
+        return data.map(item => ({
+          id: item.id,
+          timestamp: new Date(item.timestamp).toISOString(),
+          sourceIP: item.source_ip,
+          destIP: item.dest_ip,
+          protocol: item.protocol,
+          port: item.port,
+          bytes: item.bytes,
+          anomalyScore: item.anomaly_score
+        }));
       } catch (error) {
         console.error("Error fetching network traffic:", error);
         throw error;
@@ -108,12 +177,50 @@ class ApiService {
     }
   }
 
-  // Obtém status de saúde do sistema
+  // Gets system health status
   async getSystemHealth(): Promise<SystemHealth[]> {
     if (USE_REAL_API) {
       try {
-        const response = await API.get('/system/health');
-        return response.data;
+        const { data, error } = await supabase
+          .from('system_status')
+          .select('*')
+          .single();
+          
+        if (error) throw error;
+        
+        // Transform the flat structure into the component's expected format
+        return [
+          { 
+            name: 'Firewall', 
+            status: this.getStatusFromLoad(data.firewall_load), 
+            load: data.firewall_load 
+          },
+          { 
+            name: 'IDS/IPS', 
+            status: this.getStatusFromLoad(data.ids_ips_load), 
+            load: data.ids_ips_load 
+          },
+          { 
+            name: 'SIEM', 
+            status: this.getStatusFromLoad(data.siem_load), 
+            load: data.siem_load 
+          },
+          { 
+            name: 'Email Security', 
+            status: this.getStatusFromLoad(data.email_load), 
+            load: data.email_load 
+          },
+          { 
+            name: 'Endpoint Protection', 
+            status: this.getStatusFromLoad(data.endpoint_load), 
+            load: data.endpoint_load 
+          },
+          { 
+            name: 'Network Monitoring', 
+            status: this.getStatusFromLoad(data.network_monitoring_load), 
+            load: data.network_monitoring_load 
+          }
+        ];
       } catch (error) {
         console.error("Error fetching system health:", error);
         throw error;
@@ -124,20 +231,56 @@ class ApiService {
     }
   }
 
-  // Simula o envio de um alerta para análise pelo modelo de IA
+  // Helper method to determine status based on load
+  private getStatusFromLoad(load: number): 'operational' | 'degraded' | 'outage' {
+    if (load < 70) return 'operational';
+    if (load < 90) return 'degraded';
+    return 'outage';
+  }
+
+  // Simulates AI analysis of an alert
   async analyzeAlert(alertData: Partial<ThreatAlert>): Promise<{ score: number; classification: string }> {
     if (USE_REAL_API) {
       try {
-        const response = await API.post('/alerts/analyze', alertData);
-        return response.data;
+        // In a real implementation, this would call an AI service
+        // For now, we'll generate a synthetic result
+        
+        // Save the alert to Supabase
+        const { data, error } = await supabase
+          .from('threat_alerts')
+          .insert({
+            type: alertData.type,
+            severity: alertData.severity,
+            source_ip: alertData.source_ip,
+            destination_ip: alertData.destination,
+            timestamp: new Date().toISOString()
+          })
+          .select();
+          
+        if (error) throw error;
+        
+        // Generate a synthetic score based on severity
+        let score = 0.5;
+        if (alertData.severity === 'critical') score = 0.9;
+        if (alertData.severity === 'warning') score = 0.7;
+        if (alertData.severity === 'info') score = 0.3;
+        
+        let classification = 'benign';
+        if (score > 0.8) classification = 'critical_threat';
+        else if (score > 0.5) classification = 'potential_threat';
+        
+        return {
+          score,
+          classification
+        };
       } catch (error) {
         console.error("Error analyzing alert:", error);
         throw error;
       }
     } else {
-      await this.delay(1000); // Análise de IA levaria mais tempo
+      await this.delay(1000); // AI analysis would take longer
       
-      // Simulação da análise de IA
+      // Simulate AI analysis
       const score = Math.random();
       let classification = 'benign';
       
@@ -154,26 +297,57 @@ class ApiService {
     }
   }
 
-  // Simula a análise de um arquivo de log
-  async analyzeLogFile(file: File): Promise<{ threatDetected: boolean; anomalyScore: number }> {
+  // Simulates log file analysis
+  async analyzeLogFile(file: File): Promise<{ threatDetected: boolean; anomalyScore: number; suspiciousEntries?: string[] }> {
     if (USE_REAL_API) {
       try {
-        const formData = new FormData();
-        formData.append('file', file);
-        const response = await API.post('/logs/analyze', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        });
-        return response.data;
+        // In a real implementation, this would:
+        // 1. Upload the file to Supabase Storage
+        // 2. Trigger a serverless function to analyze it
+        // 3. Store results in the database
+        
+        // For now, we'll simulate this flow
+        
+        // Read file content
+        const content = await this.readFileContent(file);
+        
+        // Simulate analysis by looking for keywords
+        const lines = content.split('\n');
+        const suspiciousEntries = lines.filter(line => 
+          line.toLowerCase().includes('error') || 
+          line.toLowerCase().includes('failed') ||
+          line.toLowerCase().includes('unauthorized') ||
+          line.toLowerCase().includes('denied')
+        );
+        
+        // Calculate an anomaly score based on suspicious entries
+        const anomalyScore = Math.min(1, suspiciousEntries.length / 10);
+        const threatDetected = anomalyScore > 0.7;
+        
+        // Store results in Supabase
+        const { error } = await supabase
+          .from('processed_logs')
+          .insert({
+            file_name: file.name,
+            suspicious_entries: suspiciousEntries,
+            uploaded_at: new Date().toISOString()
+          });
+          
+        if (error) throw error;
+        
+        return {
+          threatDetected,
+          anomalyScore,
+          suspiciousEntries: suspiciousEntries.slice(0, 5) // Return top 5 suspicious lines
+        };
       } catch (error) {
         console.error("Error analyzing log file:", error);
         throw error;
       }
     } else {
-      await this.delay(2000); // Simulando processamento de arquivo
+      await this.delay(2000); // Simulating file processing
       
-      // Simula resultado de análise
+      // Simulate analysis result
       const anomalyScore = Math.random();
       return {
         threatDetected: anomalyScore > 0.7,
@@ -181,9 +355,24 @@ class ApiService {
       };
     }
   }
+  
+  // Helper method to read file content
+  private async readFileContent(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          resolve(event.target.result as string);
+        } else {
+          reject(new Error('Failed to read file'));
+        }
+      };
+      reader.onerror = () => reject(reader.error);
+      reader.readAsText(file);
+    });
+  }
 }
 
-// Exporta uma única instância do serviço para ser usada em toda a aplicação
+// Export a single instance of the service to be used throughout the application
 export const apiService = new ApiService();
-export { API };  // Exporta a instância do Axios para uso direto, se necessário
-
+export { API };  // Export Axios instance for direct use if needed

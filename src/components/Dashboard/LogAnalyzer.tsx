@@ -2,9 +2,10 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileUp, AlertCircle, CheckCircle } from 'lucide-react';
+import { FileUp, AlertCircle, CheckCircle, File } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { useAnalyzeLogFile } from '@/hooks/useApi';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const LogAnalyzer: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -21,7 +22,7 @@ const LogAnalyzer: React.FC = () => {
   const handleUpload = async () => {
     if (!selectedFile) return;
     
-    // Simular progresso de upload
+    // Simulate upload progress
     setUploadProgress(0);
     const interval = setInterval(() => {
       setUploadProgress(prev => {
@@ -33,10 +34,10 @@ const LogAnalyzer: React.FC = () => {
       });
     }, 100);
     
-    // Enviar para análise
+    // Send for analysis
     analyzeMutation.mutate(selectedFile);
     
-    // Limpar após algum tempo
+    // Clean up after some time
     setTimeout(() => {
       clearInterval(interval);
       setUploadProgress(100);
@@ -47,7 +48,7 @@ const LogAnalyzer: React.FC = () => {
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-lg font-medium flex items-center gap-2">
-          <AlertCircle size={18} className="text-muted-foreground" />
+          <File size={18} className="text-muted-foreground" />
           <span>Log File Analysis</span>
         </CardTitle>
       </CardHeader>
@@ -90,22 +91,40 @@ const LogAnalyzer: React.FC = () => {
               )}
               
               {analyzeMutation.isSuccess && (
-                <div className="flex items-center justify-between bg-muted p-3 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    {analyzeMutation.data.threatDetected ? (
-                      <AlertCircle size={16} className="text-critical" />
-                    ) : (
-                      <CheckCircle size={16} className="text-success" />
-                    )}
-                    <span className="text-sm">
-                      {analyzeMutation.data.threatDetected 
-                        ? 'Threat detected in log file' 
-                        : 'No threats detected'}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between bg-muted p-3 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      {analyzeMutation.data.threatDetected ? (
+                        <AlertCircle size={16} className="text-critical" />
+                      ) : (
+                        <CheckCircle size={16} className="text-success" />
+                      )}
+                      <span className="text-sm">
+                        {analyzeMutation.data.threatDetected 
+                          ? 'Threat detected in log file' 
+                          : 'No threats detected'}
+                      </span>
+                    </div>
+                    <span className="text-xs bg-background px-2 py-1 rounded">
+                      Score: {analyzeMutation.data.anomalyScore}
                     </span>
                   </div>
-                  <span className="text-xs bg-background px-2 py-1 rounded">
-                    Score: {analyzeMutation.data.anomalyScore}
-                  </span>
+                  
+                  {analyzeMutation.data.suspiciousEntries && analyzeMutation.data.suspiciousEntries.length > 0 && (
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-medium">Suspicious Entries:</h4>
+                      <ScrollArea className="h-[120px] rounded-md border p-2">
+                        {analyzeMutation.data.suspiciousEntries.map((entry, index) => (
+                          <div 
+                            key={index} 
+                            className="text-xs font-mono p-1 border-l-2 border-critical mb-1"
+                          >
+                            {entry}
+                          </div>
+                        ))}
+                      </ScrollArea>
+                    </div>
+                  )}
                 </div>
               )}
               

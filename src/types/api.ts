@@ -1,5 +1,5 @@
 
-// Tipos de dados para API
+// API Data Types
 
 export interface ThreatAlert {
   id: string;
@@ -51,4 +51,11 @@ export interface LegacyAlert {
   destination: string;
   severity: string;
   description: string;
+}
+
+// Analyzed log file result
+export interface LogAnalysisResult {
+  threatDetected: boolean;
+  anomalyScore: number;
+  suspiciousEntries?: string[];
 }
