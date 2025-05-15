@@ -1,4 +1,3 @@
-
 import axios from 'axios';
 import { ThreatAlert, SystemStatus, AnomalyData, TrafficData, SystemHealth, LegacyAlert } from '@/types/api';
 import { supabase } from './supabaseClient';
@@ -38,11 +37,14 @@ class ApiService {
     }
 
     try {
+      // Updated implementation for Supabase channel subscription
       const channel = supabase.channel(`public:${table}`);
       
-      if (channel && channel.on) {
-        channel.on('postgres_changes', 
-          { 
+      if (channel) {
+        // Use proper typing for channel.on method
+        const subscription = channel.on(
+          'postgres_changes', // This is actually allowed in the newer Supabase client
+          {
             event: '*', 
             schema: 'public', 
             table 
@@ -50,17 +52,26 @@ class ApiService {
           (payload) => {
             console.log('Change received!', payload);
             callback(payload);
-          })
-          .subscribe((status) => {
+          }
+        );
+
+        if (subscription && subscription.subscribe) {
+          subscription.subscribe((status) => {
             console.log(`Subscription status for ${table}:`, status);
           });
           
-        // Store unsubscribe function
-        this.realtimeSubscriptions[table] = () => {
-          supabase.removeChannel(channel);
-        };
+          // Store unsubscribe function
+          this.realtimeSubscriptions[table] = () => {
+            if (channel) {
+              supabase.removeChannel(channel);
+            }
+          };
+        } else {
+          console.warn("Subscription object not available");
+          this.realtimeSubscriptions[table] = () => {};
+        }
       } else {
-        console.warn("Channel or on method not available");
+        console.warn("Channel not available");
         this.realtimeSubscriptions[table] = () => {};
       }
     } catch (error) {

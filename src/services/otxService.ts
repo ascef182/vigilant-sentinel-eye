@@ -194,21 +194,25 @@ class OtxService {
           key,
           data,
           created_at: new Date().toISOString()
-        })
-        .select();
+        });
         
       if (error) throw error;
     } catch (e) {
       console.warn('Failed to cache OTX data:', e);
-      // If insert failed (possibly due to unique constraint), try upsert
+      // If insert failed (possibly due to unique constraint), try update instead
       try {
-        await supabase
+        // Fixed: Don't use upsert option, instead do an update
+        const { error } = await supabase
           .from('otx_cache')
-          .insert({
-            key,
+          .update({
             data,
             created_at: new Date().toISOString()
-          }, { upsert: true });
+          })
+          .eq('key', key);
+          
+        if (error) {
+          console.error('Failed to update OTX cache:', error);
+        }
       } catch (err) {
         console.error('Failed to update OTX cache:', err);
       }
