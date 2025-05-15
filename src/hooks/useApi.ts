@@ -1,7 +1,7 @@
 
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { apiService } from '@/services/api';
-import { ThreatAlert } from '@/types/api';
+import { apiService } from '@/services/apiService';
+import { ThreatAlert, AlertAnalysisResult, LogAnalysisResult } from '@/types/api';
 import { useToast } from '@/hooks/use-toast';
 
 export function useSystemStatus() {
@@ -78,7 +78,8 @@ export function useAnalyzeAlert() {
   const { toast } = useToast();
   
   return useMutation({
-    mutationFn: (alert: Partial<ThreatAlert>) => apiService.analyzeAlert(alert),
+    mutationFn: (alert: Partial<ThreatAlert>) => 
+      apiService.analyzeAlert(alert) as Promise<AlertAnalysisResult>,
     onSuccess: (data) => {
       toast({
         title: 'Alert Analyzed',
@@ -101,7 +102,8 @@ export function useAnalyzeLogFile() {
   const { toast } = useToast();
   
   return useMutation({
-    mutationFn: (file: File) => apiService.analyzeLogFile(file),
+    mutationFn: (file: File) => 
+      apiService.analyzeLogFile(file) as Promise<LogAnalysisResult>,
     onSuccess: (data) => {
       const description = data.suspiciousEntries?.length 
         ? `Found ${data.suspiciousEntries.length} suspicious entries` 

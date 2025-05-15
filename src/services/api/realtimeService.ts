@@ -1,82 +1,79 @@
 
 import { supabase } from '../supabaseClient';
 
+type SubscriptionCallback = (payload: any) => void;
+
 /**
- * Service for managing realtime subscriptions
+ * Service for handling real-time Supabase subscriptions
  */
 export class RealtimeService {
-  // Stores realtime subscription callbacks
-  private realtimeSubscriptions: { [key: string]: () => void } = {};
+  private subscriptions: Map<string, { channel: any; callback: SubscriptionCallback }> = new Map();
 
-  // Subscribes to realtime changes for a given table
-  subscribeToTable(table: string, callback: (payload: any) => void): () => void {
-    if (!supabase) {
-      console.warn('Realtime subscriptions require Supabase connection');
-      return () => {};
-    }
-
+  /**
+   * Subscribe to changes on a specific table
+   */
+  subscribeToTable(tableName: string, callback: SubscriptionCallback): string {
     try {
-      // Create a channel for this table
-      const channel = supabase.channel(`public:${table}`);
+      const subscriptionId = `sub_${Date.now()}`;
       
-      if (channel) {
-        // Subscribe to changes
-        // Note: Using 'any' type for now due to type issues with Supabase client
-        // The actual implementation supports postgres_changes but TypeScript definitions are incorrect
-        const subscription = (channel as any).on(
+      // Create a channel
+      const channel = supabase
+        .channel(subscriptionId)
+        .on(
           'postgres_changes',
-          {
-            event: '*', 
+          { 
+            event: 'INSERT', 
             schema: 'public', 
-            table 
-          }, 
-          (payload: any) => {
-            console.log('Change received!', payload);
+            table: tableName 
+          },
+          (payload) => {
             callback(payload);
           }
         );
-
-        if (subscription && subscription.subscribe) {
-          subscription.subscribe((status: string) => {
-            console.log(`Subscription status for ${table}:`, status);
-          });
-          
-          // Store unsubscribe function
-          this.realtimeSubscriptions[table] = () => {
-            if (channel) {
-              supabase.removeChannel(channel);
-            }
-          };
-        } else {
-          console.warn("Subscription object not available");
-          this.realtimeSubscriptions[table] = () => {};
+      
+      // Store the subscription
+      this.subscriptions.set(subscriptionId, {
+        channel,
+        callback
+      });
+      
+      // Start the subscription
+      channel.subscribe((status: string) => {
+        if (status === 'SUBSCRIBED') {
+          console.log(`Subscribed to ${tableName} changes`);
         }
-      } else {
-        console.warn("Channel not available");
-        this.realtimeSubscriptions[table] = () => {};
-      }
+      });
+      
+      return subscriptionId;
     } catch (error) {
-      console.error("Error setting up channel:", error);
-      this.realtimeSubscriptions[table] = () => {};
-    }
-    
-    return () => this.unsubscribe(table);
-  }
-
-  // Unsubscribes from a specific table
-  unsubscribe(table: string): void {
-    if (this.realtimeSubscriptions[table]) {
-      this.realtimeSubscriptions[table]();
-      delete this.realtimeSubscriptions[table];
+      console.error(`Failed to subscribe to ${tableName}:`, error);
+      // Return a dummy ID that won't be used
+      return `failed_${Date.now()}`;
     }
   }
 
-  // Unsubscribes from all tables
+  /**
+   * Unsubscribe from a specific subscription
+   */
+  unsubscribe(subscriptionId: string): void {
+    const subscription = this.subscriptions.get(subscriptionId);
+    if (subscription) {
+      // Remove the subscription
+      supabase.removeChannel(subscription.channel);
+      this.subscriptions.delete(subscriptionId);
+      console.log(`Unsubscribed from ${subscriptionId}`);
+    }
+  }
+
+  /**
+   * Unsubscribe from all subscriptions
+   */
   unsubscribeAll(): void {
-    Object.keys(this.realtimeSubscriptions).forEach(table => {
-      this.realtimeSubscriptions[table]();
+    this.subscriptions.forEach((subscription, id) => {
+      supabase.removeChannel(subscription.channel);
+      console.log(`Unsubscribed from ${id}`);
     });
-    this.realtimeSubscriptions = {};
+    this.subscriptions.clear();
   }
 }
 

@@ -2,8 +2,8 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { virusTotalService, calculateThreatScore } from '@/services/virusTotalService';
-import { useToast } from './use-toast';
-import { ThreatAlert } from '@/types/api';
+import { useToast } from '@/hooks/use-toast';
+import { ThreatAlert, AlertAnalysisResult } from '@/types/api';
 import { apiService } from '@/services/apiService';
 import { VirusTotalResult } from '@/types/virusTotal';
 

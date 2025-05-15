@@ -6,6 +6,7 @@ import { FileUp, AlertCircle, CheckCircle, File } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { useAnalyzeLogFile } from '@/hooks/useApi';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { LogAnalysisResult } from '@/types/api';
 
 const LogAnalyzer: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -94,27 +95,28 @@ const LogAnalyzer: React.FC = () => {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between bg-muted p-3 rounded-lg">
                     <div className="flex items-center gap-2">
-                      {analyzeMutation.data.threatDetected ? (
+                      {(analyzeMutation.data as LogAnalysisResult).threatDetected ? (
                         <AlertCircle size={16} className="text-critical" />
                       ) : (
                         <CheckCircle size={16} className="text-success" />
                       )}
                       <span className="text-sm">
-                        {analyzeMutation.data.threatDetected 
+                        {(analyzeMutation.data as LogAnalysisResult).threatDetected 
                           ? 'Threat detected in log file' 
                           : 'No threats detected'}
                       </span>
                     </div>
                     <span className="text-xs bg-background px-2 py-1 rounded">
-                      Score: {analyzeMutation.data.anomalyScore}
+                      Score: {(analyzeMutation.data as LogAnalysisResult).anomalyScore}
                     </span>
                   </div>
                   
-                  {analyzeMutation.data.suspiciousEntries && analyzeMutation.data.suspiciousEntries.length > 0 && (
+                  {(analyzeMutation.data as LogAnalysisResult).suspiciousEntries && 
+                   (analyzeMutation.data as LogAnalysisResult).suspiciousEntries?.length > 0 && (
                     <div className="space-y-2">
                       <h4 className="text-sm font-medium">Suspicious Entries:</h4>
                       <ScrollArea className="h-[120px] rounded-md border p-2">
-                        {analyzeMutation.data.suspiciousEntries.map((entry, index) => (
+                        {(analyzeMutation.data as LogAnalysisResult).suspiciousEntries?.map((entry, index) => (
                           <div 
                             key={index} 
                             className="text-xs font-mono p-1 border-l-2 border-critical mb-1"
