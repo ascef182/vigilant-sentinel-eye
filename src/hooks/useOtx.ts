@@ -1,9 +1,8 @@
-
 import { useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { otxService } from '@/services/otxService';
+import { otxService } from '@/services/otx';
 import { useToast } from './use-toast';
-import { apiService } from '@/services/apiService';
+import { apiService } from '@/services/api';
 
 export function useOtx() {
   const { toast } = useToast();

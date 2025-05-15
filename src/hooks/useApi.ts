@@ -1,6 +1,6 @@
 
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { apiService } from '@/services/apiService';
+import { apiService } from '@/services/api';
 import { ThreatAlert } from '@/types/api';
 import { useToast } from '@/hooks/use-toast';
 
