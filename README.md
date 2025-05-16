@@ -135,8 +135,8 @@ Este projeto está licenciado sob a [MIT License](LICENSE).
 
 ## 📞 Contato
 
-Para dúvidas ou suporte, entre em contato através de [seu-email@exemplo.com](mailto:seu-email@exemplo.com).
+Para dúvidas ou suporte, entre em contato através de [linkedin](https://www.linkedin.com/in/pamelaascefcazarini/).
 
 ---
 
-Desenvolvido com ❤️ por [Seu Nome/Equipe]
+Desenvolvido com ❤️ por [Pâm]
