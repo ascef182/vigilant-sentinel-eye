@@ -1,73 +1,142 @@
-# Welcome to your Lovable project
 
-## Project info
+# Cybersecurity Threat Detection Platform
 
-**URL**: https://lovable.dev/projects/c6817513-8341-4dca-a6db-92a5cf1867b7
+![Cybersecurity Banner](https://example.com/banner-image.png)
 
-## How can I edit this code?
+## 🛡️ Visão geral
 
-There are several ways of editing your application.
+Esta plataforma de detecção de ameaças de segurança cibernética potencializada por IA oferece monitoramento em tempo real, análise de incidentes e integração com importantes feeds de inteligência de ameaças. O dashboard interativo permite visualizar, analisar e responder rapidamente a potenciais ameaças de segurança.
 
-**Use Lovable**
+## 🔍 Funcionalidades principais
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/c6817513-8341-4dca-a6db-92a5cf1867b7) and start prompting.
+- **Monitoramento em tempo real**: Visualização de alertas e anomalias de segurança conforme elas ocorrem
+- **Dashboard analítico**: Painéis e gráficos intuitivos para visualização de dados de segurança
+- **Análise de logs**: Capacidade de fazer upload e analisar arquivos de log em busca de atividades suspeitas
+- **Integração com OTX (Open Threat Exchange)**: Verificação de IPs, domínios e hashes contra a inteligência de ameaças da AlienVault
+- **Integração com VirusTotal**: Análise de arquivos, URLs, IPs e domínios contra múltiplos mecanismos antivírus
+- **Mapa global de ameaças**: Visualização geográfica das fontes de ataques e atividades maliciosas
+- **Alertas em tempo real**: Notificações instantâneas quando novas ameaças são detectadas
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🔧 Tecnologias utilizadas
 
-**Use your preferred IDE**
+- **Frontend**: React, TypeScript, Vite
+- **UI/UX**: Tailwind CSS, shadcn/ui
+- **Gerenciamento de estado**: TanStack Query (React Query)
+- **Visualização de dados**: Recharts
+- **API e integração**: Axios, Supabase
+- **Serviços de segurança**: VirusTotal API, AlienVault OTX API
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## 📊 Arquitetura
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+O projeto segue uma arquitetura modular composta por:
 
-Follow these steps:
+- **Camada de apresentação**: Componentes React organizados por função
+- **Camada de serviços**: Módulos para interação com APIs externas (VirusTotal, OTX) e internas
+- **Camada de análise**: Processamento e análise de dados de segurança em tempo real
+- **Camada de persistência**: Armazenamento e cache de dados via Supabase
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### Diagrama da arquitetura
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```
+┌───────────────┐           ┌───────────────┐           ┌───────────────┐
+│   Interface   │◄─────────►│   Serviços    │◄─────────►│  APIs Externas │
+│     React     │           │  de Análise   │           │  (VT, OTX)    │
+└───────────────┘           └───────────────┘           └───────────────┘
+        ▲                           ▲                           ▲
+        │                           │                           │
+        ▼                           ▼                           ▼
+┌───────────────┐           ┌───────────────┐           ┌───────────────┐
+│Armazenamento  │◄─────────►│    Cache e    │◄─────────►│   Análise     │
+│   Supabase    │           │    Estado     │           │ em Tempo Real  │
+└───────────────┘           └───────────────┘           └───────────────┘
 ```
 
-**Edit a file directly in GitHub**
+## 🚀 Instalação e execução
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Pré-requisitos
 
-**Use GitHub Codespaces**
+- Node.js 16+
+- npm ou yarn
+- Chaves de API para VirusTotal e OTX (opcional, mas recomendado para funcionalidade completa)
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### Configuração
 
-## What technologies are used for this project?
+1. Clone o repositório:
+   ```sh
+   git clone https://github.com/seu-usuario/cybersecurity-platform.git
+   cd cybersecurity-platform
+   ```
 
-This project is built with:
+2. Instale as dependências:
+   ```sh
+   npm install
+   # ou
+   yarn install
+   ```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+3. Execute a aplicação em modo de desenvolvimento:
+   ```sh
+   npm run dev
+   # ou
+   yarn dev
+   ```
 
-## How can I deploy this project?
+4. Acesse a aplicação em `http://localhost:8080`
 
-Simply open [Lovable](https://lovable.dev/projects/c6817513-8341-4dca-a6db-92a5cf1867b7) and click on Share -> Publish.
+## ⚙️ Configuração de APIs
 
-## Can I connect a custom domain to my Lovable project?
+### VirusTotal API
 
-Yes it is!
+1. Obtenha uma chave de API gratuita em [VirusTotal](https://www.virustotal.com/gui/join-us)
+2. Adicione sua chave de API através da interface do analisador de VirusTotal no dashboard
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+### AlienVault OTX (Open Threat Exchange)
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+1. Crie uma conta em [AlienVault OTX](https://otx.alienvault.com/)
+2. Obtenha sua chave de API no perfil do usuário
+3. Adicione sua chave de API através da interface do analisador OTX no dashboard
+
+## 📋 Estrutura do projeto
+
+```
+src/
+├── components/      # Componentes reutilizáveis da UI
+│   ├── Dashboard/   # Componentes específicos do dashboard
+│   └── ui/          # Componentes base da UI (shadcn)
+├── hooks/           # Hooks personalizados React
+├── lib/            # Utilitários e funções auxiliares
+├── pages/          # Componentes de páginas/rotas
+├── services/       # Serviços de API e integração
+│   ├── api/        # Serviços da API interna
+│   ├── otx/        # Serviços da API OTX
+│   └── virusTotal/ # Serviços da API VirusTotal
+└── types/          # Definições de tipos TypeScript
+```
+
+## 🔐 Segurança
+
+- Todas as chaves de API são armazenadas apenas no navegador do cliente
+- Recomenda-se integração com Supabase para armazenamento seguro de credenciais em ambiente de produção
+- Os dados sensíveis nunca são compartilhados externamente
+
+## 🤝 Contribuindo
+
+Contribuições são bem-vindas! Para contribuir:
+
+1. Faça um fork do projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/nova-funcionalidade`)
+3. Faça commit das alterações (`git commit -m 'Adiciona nova funcionalidade'`)
+4. Faça push para a branch (`git push origin feature/nova-funcionalidade`)
+5. Abra um Pull Request
+
+## 📄 Licença
+
+Este projeto está licenciado sob a [MIT License](LICENSE).
+
+## 📞 Contato
+
+Para dúvidas ou suporte, entre em contato através de [seu-email@exemplo.com](mailto:seu-email@exemplo.com).
+
+---
+
+Desenvolvido com ❤️ por [Seu Nome/Equipe]
