@@ -26,7 +26,7 @@ export class OtxCacheService {
       // If insert failed (possibly due to unique constraint), try update instead
       try {
         // Update existing record
-        const { error } = await supabase
+        const updateResult = await supabase
           .from('otx_cache')
           .update({
             data,
@@ -34,8 +34,8 @@ export class OtxCacheService {
           })
           .eq('key', key);
           
-        if (error) {
-          console.error('Failed to update OTX cache:', error);
+        if (updateResult.error) {
+          console.error('Failed to update OTX cache:', updateResult.error);
         }
       } catch (err) {
         console.error('Failed to update OTX cache:', err);
