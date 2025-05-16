@@ -29,17 +29,19 @@ export class RealtimeService {
           (payload) => {
             callback(payload);
           }
-        )
-        .subscribe((status: string) => {
-          if (status === 'SUBSCRIBED') {
-            console.log(`Subscribed to ${tableName} changes`);
-          }
-        });
+        );
       
       // Store the subscription
       this.subscriptions.set(subscriptionId, {
         channel,
         callback
+      });
+      
+      // Start the subscription
+      channel.subscribe((status: string) => {
+        if (status === 'SUBSCRIBED') {
+          console.log(`Subscribed to ${tableName} changes`);
+        }
       });
       
       return subscriptionId;
