@@ -1,142 +1,170 @@
 
 # Cybersecurity Threat Detection Platform
 
-![Cybersecurity Banner](https://example.com/banner-image.png)
+![Cybersecurity Banner](https://images.unsplash.com/photo-1550751827-4bd374c3f58b?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80)
 
-## 🛡️ Visão geral
+## 🛡️ Overview
 
-Esta plataforma de detecção de ameaças de segurança cibernética potencializada por IA oferece monitoramento em tempo real, análise de incidentes e integração com importantes feeds de inteligência de ameaças. O dashboard interativo permite visualizar, analisar e responder rapidamente a potenciais ameaças de segurança.
+This AI-powered cybersecurity threat detection platform offers real-time monitoring, incident analysis, and integration with major threat intelligence feeds. The interactive dashboard allows you to visualize, analyze, and quickly respond to potential security threats.
 
-## 🔍 Funcionalidades principais
+## 📸 Screenshots
 
-- **Monitoramento em tempo real**: Visualização de alertas e anomalias de segurança conforme elas ocorrem
-- **Dashboard analítico**: Painéis e gráficos intuitivos para visualização de dados de segurança
-- **Análise de logs**: Capacidade de fazer upload e analisar arquivos de log em busca de atividades suspeitas
-- **Integração com OTX (Open Threat Exchange)**: Verificação de IPs, domínios e hashes contra a inteligência de ameaças da AlienVault
-- **Integração com VirusTotal**: Análise de arquivos, URLs, IPs e domínios contra múltiplos mecanismos antivírus
-- **Mapa global de ameaças**: Visualização geográfica das fontes de ataques e atividades maliciosas
-- **Alertas em tempo real**: Notificações instantâneas quando novas ameaças são detectadas
+### Main Dashboard
+![Dashboard Overview](https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80)
+*Real-time security monitoring dashboard with alerts and analytics*
 
-## 🔧 Tecnologias utilizadas
+### Network Traffic Analysis
+![Network Analysis](https://images.unsplash.com/photo-1558494949-ef010cbdcc31?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80)
+*Detailed network traffic monitoring and anomaly detection*
+
+### Threat Intelligence
+![Threat Intel](https://images.unsplash.com/photo-1563986768609-322da13575f3?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80)
+*Integration with VirusTotal and OTX for comprehensive threat analysis*
+
+### Global Threat Map
+![Threat Map](https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80)
+*Geographic visualization of attack sources and malicious activities*
+
+### Log Analysis
+![Log Analysis](https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80)
+*Advanced log analysis and suspicious activity detection*
+
+## 🔍 Key Features
+
+- **Real-time Monitoring**: Visualization of security alerts and anomalies as they occur
+- **Analytics Dashboard**: Intuitive panels and charts for security data visualization
+- **Log Analysis**: Upload and analyze log files for suspicious activities
+- **OTX Integration**: Check IPs, domains, and hashes against AlienVault's threat intelligence
+- **VirusTotal Integration**: Analyze files, URLs, IPs, and domains against multiple antivirus engines
+- **Global Threat Map**: Geographic visualization of attack sources and malicious activities
+- **Real-time Alerts**: Instant notifications when new threats are detected
+
+## 🔧 Technologies Used
 
 - **Frontend**: React, TypeScript, Vite
 - **UI/UX**: Tailwind CSS, shadcn/ui
-- **Gerenciamento de estado**: TanStack Query (React Query)
-- **Visualização de dados**: Recharts
-- **API e integração**: Axios, Supabase
-- **Serviços de segurança**: VirusTotal API, AlienVault OTX API
+- **State Management**: TanStack Query (React Query)
+- **Data Visualization**: Recharts
+- **API Integration**: Axios, Supabase
+- **Security Services**: VirusTotal API, AlienVault OTX API
 
-## 📊 Arquitetura
+## 📊 Architecture
 
-O projeto segue uma arquitetura modular composta por:
+The project follows a modular architecture consisting of:
 
-- **Camada de apresentação**: Componentes React organizados por função
-- **Camada de serviços**: Módulos para interação com APIs externas (VirusTotal, OTX) e internas
-- **Camada de análise**: Processamento e análise de dados de segurança em tempo real
-- **Camada de persistência**: Armazenamento e cache de dados via Supabase
+- **Presentation Layer**: React components organized by function
+- **Service Layer**: Modules for interaction with external APIs (VirusTotal, OTX) and internal services
+- **Analysis Layer**: Real-time security data processing and analysis
+- **Persistence Layer**: Data storage and caching via Supabase
 
-### Diagrama da arquitetura
+### Architecture Diagram
 
 ```
 ┌───────────────┐           ┌───────────────┐           ┌───────────────┐
-│   Interface   │◄─────────►│   Serviços    │◄─────────►│  APIs Externas │
-│     React     │           │  de Análise   │           │  (VT, OTX)    │
+│   React UI    │◄─────────►│   Analysis    │◄─────────►│ External APIs │
+│   Interface   │           │   Services    │           │  (VT, OTX)    │
 └───────────────┘           └───────────────┘           └───────────────┘
         ▲                           ▲                           ▲
         │                           │                           │
         ▼                           ▼                           ▼
 ┌───────────────┐           ┌───────────────┐           ┌───────────────┐
-│Armazenamento  │◄─────────►│    Cache e    │◄─────────►│   Análise     │
-│   Supabase    │           │    Estado     │           │ em Tempo Real  │
+│   Supabase    │◄─────────►│    Cache &    │◄─────────►│   Real-time   │
+│   Storage     │           │     State     │           │   Analysis    │
 └───────────────┘           └───────────────┘           └───────────────┘
 ```
 
-## 🚀 Instalação e execução
+## 🚀 Installation and Setup
 
-### Pré-requisitos
+### Prerequisites
 
 - Node.js 16+
-- npm ou yarn
-- Chaves de API para VirusTotal e OTX (opcional, mas recomendado para funcionalidade completa)
+- npm or yarn
+- API keys for VirusTotal and OTX (optional, but recommended for full functionality)
 
-### Configuração
+### Setup
 
-1. Clone o repositório:
+1. Clone the repository:
    ```sh
-   git clone https://github.com/seu-usuario/cybersecurity-platform.git
+   git clone https://github.com/your-username/cybersecurity-platform.git
    cd cybersecurity-platform
    ```
 
-2. Instale as dependências:
+2. Install dependencies:
    ```sh
    npm install
-   # ou
+   # or
    yarn install
    ```
 
-3. Execute a aplicação em modo de desenvolvimento:
+3. Run the application in development mode:
    ```sh
    npm run dev
-   # ou
+   # or
    yarn dev
    ```
 
-4. Acesse a aplicação em `http://localhost:8080`
+4. Access the application at `http://localhost:8080`
 
-## ⚙️ Configuração de APIs
+## ⚙️ API Configuration
 
 ### VirusTotal API
 
-1. Obtenha uma chave de API gratuita em [VirusTotal](https://www.virustotal.com/gui/join-us)
-2. Adicione sua chave de API através da interface do analisador de VirusTotal no dashboard
+1. Get a free API key at [VirusTotal](https://www.virustotal.com/gui/join-us)
+2. Add your API key through the VirusTotal analyzer interface in the dashboard
 
 ### AlienVault OTX (Open Threat Exchange)
 
-1. Crie uma conta em [AlienVault OTX](https://otx.alienvault.com/)
-2. Obtenha sua chave de API no perfil do usuário
-3. Adicione sua chave de API através da interface do analisador OTX no dashboard
+1. Create an account at [AlienVault OTX](https://otx.alienvault.com/)
+2. Get your API key from your user profile
+3. Add your API key through the OTX analyzer interface in the dashboard
 
-## 📋 Estrutura do projeto
+## 📋 Project Structure
 
 ```
 src/
-├── components/      # Componentes reutilizáveis da UI
-│   ├── Dashboard/   # Componentes específicos do dashboard
-│   └── ui/          # Componentes base da UI (shadcn)
-├── hooks/           # Hooks personalizados React
-├── lib/            # Utilitários e funções auxiliares
-├── pages/          # Componentes de páginas/rotas
-├── services/       # Serviços de API e integração
-│   ├── api/        # Serviços da API interna
-│   ├── otx/        # Serviços da API OTX
-│   └── virusTotal/ # Serviços da API VirusTotal
-└── types/          # Definições de tipos TypeScript
+├── components/      # Reusable UI components
+│   ├── Dashboard/   # Dashboard-specific components
+│   └── ui/          # Base UI components (shadcn)
+├── hooks/           # Custom React hooks
+├── lib/            # Utilities and helper functions
+├── pages/          # Page/route components
+├── services/       # API services and integration
+│   ├── api/        # Internal API services
+│   ├── otx/        # OTX API services
+│   └── virusTotal/ # VirusTotal API services
+└── types/          # TypeScript type definitions
 ```
 
-## 🔐 Segurança
+## 🔐 Security
 
-- Todas as chaves de API são armazenadas apenas no navegador do cliente
-- Recomenda-se integração com Supabase para armazenamento seguro de credenciais em ambiente de produção
-- Os dados sensíveis nunca são compartilhados externamente
+- All API keys are stored only in the client browser
+- Integration with Supabase recommended for secure credential storage in production
+- Sensitive data is never shared externally
 
-## 🤝 Contribuindo
+## 🚨 Important Notes
 
-Contribuições são bem-vindas! Para contribuir:
+- **API Keys Security**: Make sure your API keys are not exposed in the repository. All keys are stored locally in the browser.
+- **Real-time Features**: Some features require Supabase integration for full real-time functionality.
+- **Development Mode**: The platform works in demo mode without API keys, using mock data.
 
-1. Faça um fork do projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/nova-funcionalidade`)
-3. Faça commit das alterações (`git commit -m 'Adiciona nova funcionalidade'`)
-4. Faça push para a branch (`git push origin feature/nova-funcionalidade`)
-5. Abra um Pull Request
+## 🤝 Contributing
 
-## 📄 Licença
+Contributions are welcome! To contribute:
 
-Este projeto está licenciado sob a [MIT License](LICENSE).
+1. Fork the project
+2. Create a feature branch (`git checkout -b feature/new-feature`)
+3. Commit your changes (`git commit -m 'Add new feature'`)
+4. Push to the branch (`git push origin feature/new-feature`)
+5. Open a Pull Request
 
-## 📞 Contato
+## 📄 License
 
-Para dúvidas ou suporte, entre em contato através de [linkedin](https://www.linkedin.com/in/pamelaascefcazarini/).
+This project is licensed under the [MIT License](LICENSE).
+
+## 📞 Contact
+
+For questions or support, contact us through [LinkedIn](https://www.linkedin.com/in/pamelaascefcazarini/).
 
 ---
 
-Desenvolvido com ❤️ por [Pâm]
+Developed with ❤️ by [Pâm]

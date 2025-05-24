@@ -16,7 +16,7 @@ export class RealtimeService {
     try {
       const subscriptionId = `sub_${Date.now()}`;
       
-      // Create a channel
+      // Create a channel with the correct API
       const channel = supabase
         .channel(subscriptionId)
         .on(
@@ -29,19 +29,17 @@ export class RealtimeService {
           (payload) => {
             callback(payload);
           }
-        );
+        )
+        .subscribe((status: string) => {
+          if (status === 'SUBSCRIBED') {
+            console.log(`Subscribed to ${tableName} changes`);
+          }
+        });
       
       // Store the subscription
       this.subscriptions.set(subscriptionId, {
         channel,
         callback
-      });
-      
-      // Start the subscription
-      channel.subscribe((status: string) => {
-        if (status === 'SUBSCRIBED') {
-          console.log(`Subscribed to ${tableName} changes`);
-        }
       });
       
       return subscriptionId;
