@@ -61,6 +61,39 @@ export class AlertService {
     }
   }
 
+  // Gets legacy alerts with proper mapping
+  async getLegacyAlerts(): Promise<LegacyAlert[]> {
+    if (USE_REAL_API) {
+      try {
+        const queryResult = await supabase
+          .from('threat_alerts')
+          .select('*');
+          
+        if (queryResult.error) throw queryResult.error;
+        
+        const data = queryResult.data || [];
+        
+        // Map to LegacyAlert format with message property
+        return data.map(alert => ({
+          id: String(alert.id),
+          message: alert.description || `${alert.type} detected`, // Include message property
+          severity: alert.severity as 'low' | 'medium' | 'high' | 'critical',
+          timestamp: new Date(alert.timestamp).toISOString(),
+          type: alert.type,
+          source: alert.source_ip,
+          destination: alert.destination_ip,
+          description: alert.description || `${alert.type} detected from ${alert.source_ip}`
+        }));
+      } catch (error) {
+        console.error("Error fetching legacy alerts:", error);
+        throw error;
+      }
+    } else {
+      await this.delay();
+      return alertFeedData;
+    }
+  }
+
   // Simulates AI analysis of an alert
   async analyzeAlert(alertData: Partial<ThreatAlert>): Promise<{ score: number; classification: string }> {
     if (USE_REAL_API) {

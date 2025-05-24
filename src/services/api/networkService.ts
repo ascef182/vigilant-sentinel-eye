@@ -71,8 +71,9 @@ export class NetworkService {
         // Limit to 15 items
         const limitedData = sortedData.slice(0, 15);
         
+        // Convert to TrafficData format with proper type conversion
         return limitedData.map(item => ({
-          id: String(item.id), // Convert number to string
+          id: String(item.id), // Convert number to string to match TrafficData interface
           timestamp: new Date(item.timestamp).toISOString(),
           sourceIP: item.source_ip,
           destIP: item.dest_ip,
