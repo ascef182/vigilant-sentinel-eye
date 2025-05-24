@@ -16,17 +16,17 @@ export class RealtimeService {
     try {
       const subscriptionId = `sub_${Date.now()}`;
       
-      // Create a channel with the correct API
+      // Create a channel with the correct API for postgres_changes
       const channel = supabase
         .channel(subscriptionId)
         .on(
-          'postgres_changes',
+          'postgres_changes' as any,
           { 
             event: 'INSERT', 
             schema: 'public', 
             table: tableName 
-          },
-          (payload) => {
+          } as any,
+          (payload: any) => {
             callback(payload);
           }
         )

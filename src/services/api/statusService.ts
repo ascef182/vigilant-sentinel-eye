@@ -50,6 +50,9 @@ export class StatusService {
         const systemsMonitored = 6; // Fixed number of systems we're monitoring
         
         return {
+          status: data.status || 'online',
+          uptime: data.uptime || 0,
+          lastCheck: data.last_check || new Date().toISOString(),
           activeThreats: recentAlerts.length,
           systemsMonitored,
           alertsToday: recentAlerts.length,
@@ -92,32 +95,56 @@ export class StatusService {
           { 
             name: 'Firewall', 
             status: this.getStatusFromLoad(data.firewall_load), 
-            load: data.firewall_load 
+            load: data.firewall_load,
+            cpu: data.firewall_load,
+            memory: Math.random() * 100,
+            disk: Math.random() * 100,
+            network: Math.random() * 100
           },
           { 
             name: 'IDS/IPS', 
             status: this.getStatusFromLoad(data.ids_ips_load), 
-            load: data.ids_ips_load 
+            load: data.ids_ips_load,
+            cpu: data.ids_ips_load,
+            memory: Math.random() * 100,
+            disk: Math.random() * 100,
+            network: Math.random() * 100
           },
           { 
             name: 'SIEM', 
             status: this.getStatusFromLoad(data.siem_load), 
-            load: data.siem_load 
+            load: data.siem_load,
+            cpu: data.siem_load,
+            memory: Math.random() * 100,
+            disk: Math.random() * 100,
+            network: Math.random() * 100
           },
           { 
             name: 'Email Security', 
             status: this.getStatusFromLoad(data.email_load), 
-            load: data.email_load 
+            load: data.email_load,
+            cpu: data.email_load,
+            memory: Math.random() * 100,
+            disk: Math.random() * 100,
+            network: Math.random() * 100
           },
           { 
             name: 'Endpoint Protection', 
             status: this.getStatusFromLoad(data.endpoint_load), 
-            load: data.endpoint_load 
+            load: data.endpoint_load,
+            cpu: data.endpoint_load,
+            memory: Math.random() * 100,
+            disk: Math.random() * 100,
+            network: Math.random() * 100
           },
           { 
             name: 'Network Monitoring', 
             status: this.getStatusFromLoad(data.network_monitoring_load), 
-            load: data.network_monitoring_load 
+            load: data.network_monitoring_load,
+            cpu: data.network_monitoring_load,
+            memory: Math.random() * 100,
+            disk: Math.random() * 100,
+            network: Math.random() * 100
           }
         ];
       } catch (error) {

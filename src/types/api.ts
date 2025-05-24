@@ -28,28 +28,38 @@ export interface AnomalyData {
   score: number;
 }
 
-// Legacy alert interface for backwards compatibility
+// Updated LegacyAlert interface to match actual usage
 export interface LegacyAlert {
   id: string;
   message: string;
   severity: 'low' | 'medium' | 'high' | 'critical';
   timestamp: string;
   type: string;
+  source?: string;
+  destination?: string;
+  description: string;
 }
 
-// System status interface
+// Updated SystemStatus interface to include all needed properties
 export interface SystemStatus {
-  status: 'online' | 'offline' | 'degraded';
-  uptime: number;
-  lastCheck: string;
+  status?: 'online' | 'offline' | 'degraded';
+  uptime?: number;
+  lastCheck?: string;
+  activeThreats: number;
+  systemsMonitored: number;
+  alertsToday: number;
+  criticalAlerts: number;
 }
 
-// System health interface
+// Updated SystemHealth interface to match component usage
 export interface SystemHealth {
-  cpu: number;
-  memory: number;
-  disk: number;
-  network: number;
+  name: string;
+  status: 'operational' | 'degraded' | 'outage';
+  load: number;
+  cpu?: number;
+  memory?: number;
+  disk?: number;
+  network?: number;
 }
 
 // Interfaces for API responses

@@ -48,15 +48,15 @@ export class AlertService {
       }
     } else {
       await this.delay();
-      // Convert legacy format to ThreatAlert format
-      return (alertFeedData as LegacyAlert[]).map(alert => ({
+      // Convert legacy format to ThreatAlert format properly
+      return alertFeedData.map(alert => ({
         id: String(alert.id),
         type: alert.type,
         severity: alert.severity as 'critical' | 'warning' | 'info',
         timestamp: alert.timestamp,
-        source_ip: alert.source,
-        destination: alert.destination,
-        description: alert.description
+        source_ip: alert.source || 'unknown',
+        destination: alert.destination || 'unknown',
+        description: alert.description || alert.message
       }));
     }
   }

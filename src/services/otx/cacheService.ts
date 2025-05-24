@@ -50,13 +50,16 @@ export class OtxCacheService {
     if (!supabase) return null;
     
     try {
-      const { data, error } = await supabase
+      const queryResult = await supabase
         .from('otx_cache')
         .select('*')
         .eq('key', key)
         .single();
         
-      if (error) return null;
+      if (queryResult.error) return null;
+      
+      const data = queryResult.data;
+      if (!data) return null;
       
       // Check if the cache is still valid (less than 1 hour old)
       const createdAt = new Date(data.created_at);

@@ -72,7 +72,7 @@ export class NetworkService {
         const limitedData = sortedData.slice(0, 15);
         
         return limitedData.map(item => ({
-          id: item.id,
+          id: String(item.id), // Convert number to string
           timestamp: new Date(item.timestamp).toISOString(),
           sourceIP: item.source_ip,
           destIP: item.dest_ip,
